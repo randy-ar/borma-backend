@@ -30,7 +30,14 @@ const Barang = {
       INNER JOIN Barang ON BarangTransaksi.kode_barang = Barang.kode_barang
     `);
     return rows;
-  }
+  },
+  /**
+   * @param {Array<String>} kode_barang 
+   */
+  async whereIn(kode_barang){
+    const [rows] = await db.query("SELECT * FROM Barang WHERE kode_barang IN (?)", [kode_barang]);
+    return rows;
+  },
 };
 
 module.exports = Barang;

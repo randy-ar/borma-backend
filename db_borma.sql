@@ -56,6 +56,12 @@ CREATE TABLE Kassa(
     nama VARCHAR(10) NOT NULL
 );
 
+CREATE TABLE Barang(
+    kode_barang VARCHAR(7) PRIMARY KEY,
+    nama VARCHAR(30) NOT NULL,
+    harga INT NOT NULL
+);
+
 CREATE TABLE Transaksi(
     kode_transaksi VARCHAR(100) PRIMARY KEY,
     kode_toko VARCHAR(20) NULL,
@@ -67,12 +73,6 @@ CREATE TABLE Transaksi(
     
     FOREIGN KEY (kode_toko) REFERENCES Toko(kode_toko) ON DELETE SET NULL ON UPDATE CASCADE,
     FOREIGN KEY (kode_kassa) REFERENCES Kassa(kode_kassa) ON DELETE SET NULL ON UPDATE CASCADE
-);
-
-CREATE TABLE Barang(
-    kode_barang VARCHAR(7) PRIMARY KEY,
-    nama VARCHAR(30) NOT NULL,
-    harga INT NOT NULL
 );
 
 CREATE TABLE BarangTransaksi(

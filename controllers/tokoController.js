@@ -2,7 +2,7 @@ const Toko = require('../models/toko');
 
 const tokoController = {
   // Controller untuk menambahkan data toko
-  async create(req, res) {
+  async store(req, res) {
     try {
       const { kode_toko, nama_toko, nama_perusahaan, alamat, nomor_telepon } = req.body;
 
@@ -49,20 +49,31 @@ const tokoController = {
         alamat,
         nomor_telepon,
       });
+      const dataToko = await Toko.find(kode_toko);
 
-      res.status(201).json({ message: 'Toko berhasil dibuat!', data: tokoBaru });
+      res.status(201).json({ 
+        session: 'success',
+        message: 'Toko berhasil dibuat!', 
+        data: dataToko 
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+      res.status(500).json({ 
+        session: 'failed',
+        message: 'Terjadi kesalahan pada server.', 
+        error 
+      });
     }
   },
   async index(req, res) {
     try {
       const toko = await Toko.all();
-      res.status(200).json(toko);
+      res.status(200).json({
+        data: toko
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+      res.status(500).json({ session: "failed", message: 'Terjadi kesalahan pada server.', error });
     }
   },
   async show(req, res) {
@@ -76,19 +87,23 @@ const tokoController = {
         return res.status(400).json({ errors });
       }
       const toko = await Toko.find(kode_toko);
-      res.status(200).json(toko);
+      res.status(200).json({
+        data: toko
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+      res.status(500).json({ session: "failed", message: 'Terjadi kesalahan pada server.', error });
     }
   },
   async first(req, res){
     try {
       const toko = await Toko.first();
-      res.status(200).json(toko);
+      res.status(200).json({
+        data: toko
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+      res.status(500).json({ session: "failed", message: 'Terjadi kesalahan pada server.', error });
     }
   },
   async update(req, res){
@@ -126,10 +141,36 @@ const tokoController = {
         alamat,
         nomor_telepon
       });
-      res.status(201).json({ message: 'Toko berhasil diubah!', data: toko });
+      const dataToko = await Toko.find(kode_toko);
+      res.status(201).json({ 
+        session: 'success',
+        message: 'Toko berhasil diubah!', 
+        data: dataToko
+      });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ message: 'Terjadi kesalahan pada server.', error });
+      res.status(500).json({ session: "failed", message: 'Terjadi kesalahan pada server.', error });
+    }
+  },
+  async delete(req, res){
+    try {
+      const { kode_toko } = req.body;
+      const errors = [];
+      const kodeTokoExist = await Toko.find(kode_toko);
+      if (kodeTokoExist.length === 0) {
+        errors.push({ field: 'kode_toko', message: 'Kode toko tidak ditemukan!' });
+      }
+      if(!kode_toko){
+        errors.push({ field: 'kode_toko', message: 'Kode toko harus diisi!' });
+      }
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
+      }
+      const toko = await Toko.delete(kode_toko);
+      res.status(201).json({ session: 'success', message: 'Toko berhasil dihapus!', data: toko });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ session: "failed", message: 'Terjadi kesalahan pada server.', error });
     }
   }
 };
