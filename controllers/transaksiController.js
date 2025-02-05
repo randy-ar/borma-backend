@@ -239,7 +239,74 @@ const transaksiController = {
       console.error(error);
       res.status(500).json({ session: "failed", message: "Terjadi kesalahan pada server.", error });
     }
-  }
+  },
+  generateDummy: async (req, res) => {
+    let insertedData = [];
+    const toko = await Toko.first();
+    const kode_toko = toko[0].kode_toko;
+
+    function getRandomDate(days) {
+      const now = new Date();
+      const pastDate = new Date();
+      pastDate.setDate(now.getDate() - days);
+      
+      return new Date(pastDate.getTime() + Math.random() * (now.getTime() - pastDate.getTime()));
+    }
+
+    for(let index_transaksi = 0; index_transaksi < 200; index_transaksi++) {
+      const kassa = await Kassa.random();
+      const kode_kassa = kassa[0].kode_kassa;
+      let jumlah_barang = Math.floor(Math.random() * 50);
+      let bayar = 0;
+      let total = 0;
+      let kembalian = 0;
+      let tanggal = getRandomDate(90);
+      let tanggal_formated = tanggal.toISOString().substr(0, 19).replace('T', ' ');
+      let kode_transaksi = await Transaksi.generateKodeTransaksi(tanggal);
+      let list_barang = [];
+
+      for(let i = 0; i < jumlah_barang; i++) {
+        const barang = await Barang.random();
+        total += barang[0].harga;
+        list_barang.push(barang[0]);
+      }
+
+      bayar = Math.ceil(total / 50000) * 50000;
+      kembalian = bayar - total;
+
+      const transaksi = await Transaksi.create({
+        kode_transaksi: kode_transaksi,
+        kode_toko: kode_toko,
+        kode_kassa: kode_kassa,
+        total: total,
+        bayar: bayar,
+        kembalian: kembalian,
+        tanggal: tanggal_formated,
+      });
+
+      const attach_barang = await Transaksi.attachBarang(kode_transaksi, list_barang);
+
+      if(transaksi.affectedRows > 0) {
+        insertedData.push({
+          kode_transaksi: kode_transaksi,
+          kode_toko: kode_toko,
+          kode_kassa: kode_kassa,
+          total: bayar,
+          bayar: bayar,
+          kembalian: 0,
+          tanggal: tanggal,
+          attach_barang: attach_barang,
+          jumlah_barang: jumlah_barang
+        });
+      }
+    }
+
+    res.status(201).json({
+      session: "success",
+      message: "Data transaksi berhasil disimpan.",
+      data: insertedData
+    });
+  },
 };
 
 

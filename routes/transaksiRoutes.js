@@ -9,5 +9,6 @@ router.get("/show", transaksiController.show);
 router.post("/store", transaksiController.store);
 router.post("/update", transaksiController.update);
 router.delete("/delete", transaksiController.delete);
+router.get("/generate-dummy", transaksiController.generateDummy);
 
 module.exports = router;

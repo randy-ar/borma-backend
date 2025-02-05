@@ -15,7 +15,7 @@ const kassaController = {
   show: async (req, res) => {
     try {
       const { kode_kassa } = req.params;
-      const kassa = await Kassa.find(kode_kassa);
+      const [kassa] = await Kassa.find(kode_kassa);
       res.status(200).json({
         data: kassa
       });
@@ -28,19 +28,19 @@ const kassaController = {
     try {
       const {kode_kassa, nama} = req.body;
 
-      const errors = [];
-      const existingKassa = await Kassa.find(kode_kassa);
-      if (existingKassa.length > 0) {
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa sudah terdaftar!' });
-      }
+      const errors = {};
       const alphanumericRegex = /^[a-zA-Z0-9]+$/;
       if(!kode_kassa || !alphanumericRegex.test(kode_kassa) || kode_kassa.length > 5){
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa hanya boleh berisi angka dan huruf, dan tidak boleh lebih dari 5 karakter!' });
+        errors.kode_kassa = 'Kode kassa hanya boleh berisi angka dan huruf, dan tidak boleh lebih dari 5 karakter!';
+      }
+      const existingKassa = await Kassa.find(kode_kassa);
+      if (existingKassa.length > 0) {
+        errors.kode_kassa = 'Kode kassa sudah terdaftar!';
       }
       if(!nama || nama.length > 10){
-        errors.push({ field: 'nama', message: 'Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!' });
+        errors.nama='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
 
@@ -63,22 +63,23 @@ const kassaController = {
   },
   update: async (req, res) => {
     try{
-      const { kode_kassa } = req.params;
-      const { nama } = req.body;
+      const { param_kode_kassa } = req.params;
+      const { nama, kode_kassa } = req.body;
 
-      const errors = [];
-      const existingKassa = await Kassa.find(kode_kassa);
+      const errors = {};
+      const existingKassa = await Kassa.find(param_kode_kassa);
       if (existingKassa.length === 0) {
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa tidak ditemukan!' });
+        errors.kode_kassa='Kode kassa tidak ditemukan!';
       }
       if(!nama || nama.length > 10){
-        errors.push({ field: 'nama', message: 'Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!' });
+        errors.nama='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       } 
 
-      const result = await Kassa.update(kode_kassa, {
+      const result = await Kassa.update(param_kode_kassa, {
+        kode_kassa,
         nama
       });
 
@@ -106,6 +107,17 @@ const kassaController = {
     } catch (error) {
       console.error(error);
       res.status(500).json({ session: "failed", message: "Terjadi kesalahan pada server.", error });
+    }
+  },
+  paginate: async(req, res) => {
+    try{
+      const {page, limit} = req.query;
+      const result = await Kassa.paginate(page ?? 1, limit ?? 5);
+      res.status(200).json({
+        data: result
+      });
+    }catch(error){
+      res.status(500).json({session: "failed", message: "Terjadi kesalahan pada server.", error });
     }
   }
 };

@@ -64,9 +64,8 @@ const Transaksi = {
     `, [kode_transaksi]);
     return rows;
   },
-  generateKodeTransaksi: async () => {
+  generateKodeTransaksi: async (date = new Date()) => {
     // kode_transaksi :
-    const date = new Date();
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
@@ -75,7 +74,7 @@ const Transaksi = {
     const second = String(date.getSeconds()).padStart(2, '0');
 
     // Assuming there is a function that counts transactions for the current date
-    const [result] = await db.query("SELECT COUNT(*) as count FROM Transaksi WHERE DATE(tanggal) = CURDATE()");
+    const [result] = await db.query("SELECT COUNT(*) as count FROM Transaksi WHERE DATE(tanggal) = ?", [date.toISOString().substr(0, 10)]);
     const count = result[0]?.count + 1 ?? 1;
 
 

@@ -1,45 +1,5 @@
 -- Sistem Informasi Kasir BORMA TOSERBA
 
--- Kamus Data:
-
--- Table Toko				
--- Nama Field	Tipe Data	Panjang	Kunci	Keterangan
--- kode_toko	Varchar	20	Primary Key	unique, not null
--- nama_toko	Varchar	60	-	not null
--- nama_perusahaan	Varchar	60	-	not null
--- alamat	Varchar	255	-	not null
--- nomor_telepon	Varchar	20	-	not null
-				
-				
--- Table Transaksi				
--- Nama Field	Tipe Data	Panjang	Kunci	Keterangan
--- kode_transaksi	Varchar	100	Primary Key	unique, not null
--- kode_toko	Varchar	20	Foreign key references toko(kode_toko) on delete set null on update cascade	not null
--- kode_kassa	Varchar	20	Foreign key references kassa(kode_kassa) on delete set null on update cascade	not null
--- total	Integer	10	-	not null
--- bayar	Integer	10	-	not null
--- kembalian	Integer	10	-	not null
--- tanggal	Datetime	-	-	not null
-				
-				
--- Table BarangTransaksi				
--- Nama Field	Tipe Data	Panjang	Kunci	Keterangan
--- id	BigInteger	21	Primary	auto_increment, not null, unsigned
--- kode_transaksi	Varchar	100	Foreign key references transaksi(kode_transaksi) on delete cascade on update cascade	not null
--- kode_barang	Varchar	7	Foreign key references transaksi(kode_transaksi) on delete cascade on update cascade	not null
-				
-				
--- Table Barang 				
--- Nama Field	Tipe Data	Panjang	Kunci	Keterangan
--- kode_barang	Varchar	7	Primary	unique, not null
--- nama	Varchar	30	-	not null
--- harga	Integer	10	-	not null
-				
--- Tabel Kassa				
--- Nama Field	Tipe Data	Panjang	Kunci	Keterangan
--- kode_kassa	Varchar	20	Primary	unique, not null
--- nama	Varchar	20	-	not null
-
 CREATE DATABASE IF NOT EXISTS db_borma;
 USE db_borma;
 
@@ -83,3 +43,130 @@ CREATE TABLE BarangTransaksi(
     FOREIGN KEY (kode_transaksi) REFERENCES Transaksi(kode_transaksi) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY (kode_barang) REFERENCES Barang(kode_barang) ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- Insert dummy data untuk Toko (1 baris)
+INSERT INTO Toko (kode_toko, nama_toko, nama_perusahaan, alamat, nomor_telepon) VALUES
+    ('02.244.696.7-441.000', 'Borma Toserba Bandung', 'PT Borma Sejahtera', 'Jl. Soekarno Hatta No. 123, Bandung', '022-1234567');
+
+-- Insert dummy data untuk Kassa (20 baris)
+INSERT INTO Kassa (kode_kassa, nama) VALUES
+    ('01kt', 'Kassa 1'),
+    ('02kt', 'Kassa 2'),
+    ('03kt', 'Kassa 3'),
+    ('04kt', 'Kassa 4'),
+    ('05kt', 'Kassa 5'),
+    ('06kt', 'Kassa 6'),
+    ('07kt', 'Kassa 7'),
+    ('08kt', 'Kassa 8'),
+    ('09kt', 'Kassa 9'),
+    ('10kt', 'Kassa 10'),
+    ('11kt', 'Kassa 11'),
+    ('12kt', 'Kassa 12'),
+    ('13kt', 'Kassa 13'),
+    ('14kt', 'Kassa 14'),
+    ('15kt', 'Kassa 15'),
+    ('16kt', 'Kassa 16'),
+    ('17kt', 'Kassa 17'),
+    ('18kt', 'Kassa 18'),
+    ('19kt', 'Kassa 19'),
+    ('20kt', 'Kassa 20');
+
+-- Insert dummy data for Barang (200 baris)
+INSERT INTO Barang (kode_barang, nama, harga) VALUES
+    ('0550112', 'SABUN LIFEBUOY', 5000),
+    ('0610610', 'PASTA GIGI PEPSODENT', 12000),
+    ('0740321', 'SHAMPO CLEAR MEN', 18000),
+    ('0820147', 'DEODORANT REXONA', 25000),
+    ('0950733', "SABUN CUCI MUKA POND'S", 27000),
+    ('1030655', 'TISSUE NICE 250 LEMBAR', 15000),
+    ('1120294', 'AIR MINERAL AQUA 600ML', 4000),
+    ('1250478', 'KOPI ABC SUSU 10 SACHET', 22000),
+    ('1320865', 'INDOMIE AYAM BAWANG', 3500),
+    ('1430544', 'KECAP BANGO 600ML', 29000),
+    ('1540382', 'SAOS TOMAT ABC 340GR', 18000),
+    ('1650777', 'GULA PASIR GULAKU 1KG', 16000),
+    ('1760248', 'SUSU DANCOW 400GR', 55000),
+    ('1890425', 'SEREAL KOKO KRUNCH 330GR', 41000),
+    ('1940573', 'KEJU KRAFT 165GR', 25000),
+    ('2050689', 'MENTEGA BLUE BAND 200GR', 16000),
+    ('2160346', 'MINYAK GORENG BIMOLI 2L', 38000),
+    ('2250178', 'TEPUNG SEGITIGA BIRU 1KG', 14000),
+    ('2380512', 'BERAS RICEFIELD 5KG', 70000),
+    ('2430791', 'DETERGEN RINSO 800GR', 28000),
+    ('2540367', 'PEMBALUT SOFTEX 20 PCS', 32000),
+    ('2670249', 'POPOK MAMY POKO L30', 85000),
+    ('2780596', 'PEMBERSIH LANTAI WIPOL', 27000),
+    ('2890411', 'SABUN CUCI SUNLIGHT', 29000),
+    ('2960735', 'BATERAI ALKALINE ABC AA', 15000),
+    ('3090274', 'BATERAI ENERGIZER AAA', 18000),
+    ('3120842', 'PENSIL FABER CASTELL 2B', 5000),
+    ('3270418', 'PENGHAPUS PENSIL JOYKO', 3000),
+    ('3380594', 'BOLPEN PILOT HI-TECH C', 12000),
+    ('3490758', 'SPIDOL SNOWMAN', 10000),
+    ('3560271', 'BUKU TULIS SIDU 38 LBR', 8000),
+    ('3690815', 'LEM KERTAS FOX 50GR', 6000),
+    ('3740653', 'GUNTING KERTAS JOYKO', 14000),
+    ('3870482', 'STAPLER KENKO NO.10', 18000),
+    ('3920716', 'PENGGARIS 30CM JOYKO', 9000),
+    ('4050299', 'LAKBAN COKLAT 2 INCH', 12000),
+    ('4180457', 'DOUBLE TAPE 12MM X 10M', 10000),
+    ('4290684', 'HAND SANITIZER ANTIS', 17000),
+    ('4360372', 'MASKER MEDIS EARLOOP', 35000),
+    ('4490761', 'TUSUK GIGI KAYU', 5000),
+    ('4550213', 'SARUNG TANGAN PLASTIK', 10000),
+    ('4680327', 'TALI RAFIA WARNA 1KG', 15000),
+    ('4790458', 'LAKBAN TRANSPARAN', 12000),
+    ('4860783', 'LEM TEMBAK + 2 BATANG', 30000),
+    ('4970611', 'PISAU CUTTER JOYKO', 8000),
+    ('5080426', 'MATA PISAU CUTTER', 7000),
+    ('5190754', 'KERTAS HVS A4 70 GSM', 50000),
+    ('5260298', 'KERTAS HVS F4 70 GSM', 53000),
+    ('5370481', 'MAP PLASTIK BANTEX A4', 12000),
+    ('5480652', 'MAP PLASTIK KANCING A4', 9000),
+    ('5590376', 'BINDER CLIP NO.105', 15000),
+    ('5640794', 'PAPER CLIP WARNA', 7000),
+    ('5730241', 'PAPAN CLIP FILE A4', 16000),
+    ('5820578', 'KOTAK PENSIL BESI', 20000),
+    ('5930483', 'ISOLASI KAIN HITAM', 17000),
+    ('6040312', 'ISOLASI LAKBAN MERAH', 12000),
+    ('6150425', 'PEMBUKA TUTUP BOTOL', 15000),
+    ('6260591', 'KARET GELANG WARNA', 5000),
+    ('6370745', 'SARUNG TANGAN KARET', 25000),
+    ('6480379', 'GANTUNGAN BAJU PLASTIK', 30000),
+    ('6590482', 'GANTUNGAN BAJU BESI', 45000),
+    ('6680513', 'SABUN CUCI MOBIL KIT', 40000),
+    ('6790674', 'SPON CUCI MOBIL', 12000),
+    ('6820459', 'LAP KANEBU SERBAGUNA', 20000),
+    ('6930746', 'KANIBAL HELM KARTUN', 15000),
+    ('7020372', 'MINYAK KAYU PUTIH', 35000),
+    ('7130659', 'MINYAK TELON MY BABY', 38000),
+    ('7240516', 'BEDAK BAYI JOHNSON', 25000),
+    ('7350748', 'PAMPERS HUGGIES M30', 85000),
+    ('7460429', 'KAIN LAP MICROFIBER', 35000),
+    ('7580612', 'BOTOL MINUM 1L KOTAK', 25000),
+    ('7690431', 'BOTOL MINUM 750ML', 30000),
+    ('7720386', 'KOTAK BEKAL 3 SEKAT', 40000),
+    ('7840273', 'TERMOS AIR PANAS 1.5L', 85000),
+    ('7950562', 'RANTANG SUSUN 3', 90000),
+    ('8020741', 'GELAS KACA SET 6 PCS', 75000),
+    ('8130498', 'SENDOK MAKAN STAINLESS', 45000),
+    ('8240375', 'GARPU MAKAN STAINLESS', 45000),
+    ('8350257', 'PISAU DAPUR SET 3 PCS', 60000),
+    ('8460389', 'TALENAN KAYU SEDANG', 30000),
+    ('8590673', 'PENGUPAS KENTANG', 25000),
+    ('8620451', 'SARINGAN TEH', 20000),
+    ('8730719', 'WADAH SAMBAL KECIL', 12000),
+    ('8840536', 'TUMBLER STAINLESS', 75000),
+    ('8950647', 'KOTAK MAKAN KARAKTER', 35000),
+    ('9060413', 'TEMPAT NASI ELEKTRIK', 150000),
+    ('9170728', 'PENGOCOK TELUR', 25000),
+    ('9280531', 'CETAKAN ES BATU', 40000),
+    ('9390454', 'SETRIKA PHILIPS', 275000),
+    ('9480369', 'HAIR DRYER NOVA', 120000),
+    ('9570472', 'MESIN CUKUR RAMBUT', 175000),
+    ('9680573', 'BLENDER PHILIPS 1.5L', 450000),
+    ('9780324', 'MESIN KOPI OTOMATIS', 700000),
+    ('9830651', 'KIPAS ANGIN DESK FAN', 350000),
+    ('9920572', 'MESIN CUCI LG 8KG', 3200000),
+    ('9970483', 'TV LED 32 INCH', 2500000),
+    ('9990317', 'KULKAS 2 PINTU SHARP', 4000000);

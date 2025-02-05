@@ -23,6 +23,11 @@ const Toko = {
     const [result] = await db.query("UPDATE Toko SET nama_toko = ?, nama_perusahaan = ?, alamat = ?, nomor_telepon = ? WHERE kode_toko = ?", [nama_toko, nama_perusahaan, alamat, nomor_telepon, kode_toko]);
     return result;
   },
+  async updateFirst(kode_toko_first, toko){
+    const {kode_toko, nama_toko, nama_perusahaan, alamat, nomor_telepon} = toko;
+    const [result] = await db.query("UPDATE Toko SET kode_toko = ?, nama_toko = ?, nama_perusahaan = ?, alamat = ?, nomor_telepon = ? WHERE kode_toko = ?", [kode_toko, nama_toko, nama_perusahaan, alamat, nomor_telepon, kode_toko_first]);
+    return result;
+  },
   async delete(kode_toko){
     const [result] = await db.query("DELETE FROM Toko WHERE kode_toko = ?", [kode_toko]);
     return result;

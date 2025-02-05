@@ -1,5 +1,5 @@
 const db = require("../config/db");
-const { transaksi } = require("./barang");
+const { transaksi, random } = require("./barang");
 
 const Kassa = {
   all: async () => {
@@ -15,9 +15,9 @@ const Kassa = {
     const [result] = await db.query("INSERT INTO Kassa (kode_kassa, nama) VALUES (?, UPPER(?))", [kode_kassa, nama]);
     return result;
   },
-  update: async (kode_kassa, kassa) => {
-    const {nama} = kassa;
-    const [result] = await db.query("UPDATE Kassa SET nama = UPPER(?) WHERE kode_kassa = ?", [nama, kode_kassa]);
+  update: async (param_kode_kassa, kassa) => {
+    const {nama,kode_kassa} = kassa;
+    const [result] = await db.query("UPDATE Kassa SET nama = UPPER(?), kode_kassa = ? WHERE kode_kassa = ?", [nama, kode_kassa, param_kode_kassa]);
     return result;
   },
   delete: async (kode_kassa) => {
@@ -30,7 +30,28 @@ const Kassa = {
       INNER JOIN Kassa ON Transaksi.kode_kassa = Kassa.kode_kassa
     `);
     return rows;
-  }
+  },
+  random: async () => {
+    const [rows] = await db.query("SELECT * FROM Kassa ORDER BY RAND() LIMIT 1");
+    return rows;
+  },
+  paginate: async (page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    const [rows] = await db.query("SELECT * FROM Kassa LIMIT ? OFFSET ?", [limit, offset]);
+
+    // Dapatkan total jumlah data untuk perhitungan total halaman
+    const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Kassa");
+
+    return {
+      data: rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        perPage: limit
+      }
+    };
+  },
 };
 
 module.exports = Kassa;

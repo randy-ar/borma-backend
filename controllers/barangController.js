@@ -19,15 +19,15 @@ const barangController = {
   show: async (req, res) => {
     try {
       const {kode_barang} = req.params;
-      const errors = [];
-      const barang = await Barang.find(kode_barang);
+      const errors = {};
+      const [barang] = await Barang.find(kode_barang);
       if(barang.length === 0){
-        return errors.push({ field: 'kode_barang', message: 'Kode barang tidak ditemukan!' });
+        return errors.kode_barang='Kode barang tidak ditemukan!';
       }
       if(!kode_barang){
-        errors.push({ field: 'kode_barang', message: 'Kode barang harus diisi!' });
+        errors.kode_barang='Kode barang harus diisi!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
       res.status(200).json({
@@ -41,23 +41,23 @@ const barangController = {
   store: async (req, res) => {
     try {
       const { kode_barang, nama, harga } = req.body;
-      const errors = [];
+      const errors = {};
       
-      const kodeBarangExist = await Barang.find(kode_barang);
-      if (kodeBarangExist.length > 0) {
-        errors.push({ field: 'kode_barang', message: 'Kode barang sudah terdaftar!' });
-      }
       const numericRegex = /^[0-9]+$/;
       if (!kode_barang || !numericRegex.test(kode_barang) || kode_barang.length != 7) {
-        errors.push({ field: 'kode_barang', message: 'Kode barang hanya boleh berisi angka dan harus terdiri dari 7 karakter!' });
+        errors.kode_barang='Kode barang hanya boleh berisi angka dan harus terdiri dari 7 karakter!';
+      }
+      const kodeBarangExist = await Barang.find(kode_barang);
+      if (kodeBarangExist.length > 0) {
+        errors.kode_barang='Kode barang sudah terdaftar!';
       }
       if(!nama || nama.length > 30){
-        errors.push({ field: 'nama', message: 'Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!' });
+        errors.nama='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
       }
       if(!harga || harga <= 0){
-        errors.push({ field: 'harga', message: 'Harga harus diisi dan hanya angka positif!' });
+        errors.harga='Harga harus diisi dan hanya angka positif!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
       const barang = await Barang.create({
@@ -79,26 +79,35 @@ const barangController = {
   },
   update: async (req, res) => {
     try {
-      const { kode_barang } = req.params;
-      const { nama, harga } = req.body;
+      const { param_kode_barang } = req.params;
+      const { kode_barang, nama, harga } = req.body;
+      const errors = {};
 
-      const kodeBarangExist = await Barang.find(kode_barang);
-      if(kodeBarangExist.length === 0){
-        return res.status(404).json({ message: "Barang tidak ditemukan." });
+      const paramKodeBarangExist = await Barang.find(param_kode_barang);
+      if(paramKodeBarangExist.length === 0){
+        errors.kode_barang="Barang tidak ditemukan.";
       }
-
-      const errors = [];
+      const kodeBarangExist = await Barang.find(kode_barang);
+      if (kodeBarangExist.length > 0 && !kodeBarangExist[0].kode_barang.startsWith(param_kode_barang)) {
+        errors.kode_barang="Kode barang sudah terdaftar!";
+      }
+      
+      const numericRegex = /^[0-9]+$/;
+      if(!kode_barang || !numericRegex.test(kode_barang) || kode_barang.length != 7) {
+        errors.kode_barang='Kode barang hanya boleh berisi angka dan harus terdiri dari 7 karakter!';
+      }
       if(!nama || nama.length > 30){
-        errors.push({ field: 'nama', message: 'Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!' });
+        errors.nama='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
       }
       if(!harga || harga <= 0){
-        errors.push({ field: 'harga', message: 'Harga harus diisi dan hanya angka positif!' });
+        errors.harga='Harga harus diisi dan hanya angka positif!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
 
-      const barang = await Barang.update(kode_barang, {
+      const barang = await Barang.update(param_kode_barang, {
+        kode_barang,
         nama,
         harga
       });
@@ -117,15 +126,15 @@ const barangController = {
   delete: async (req, res) => {
     try {
       const { kode_barang } = req.params;
-      const errors = [];
+      const errors = {};
       if (!kode_barang) {
-        errors.push({ field: 'kode_barang', message: 'Kode barang harus diisi!' });
+        errors.kode_barang='Kode barang harus diisi!';
       }
       const kodeBarangExist = await Barang.find(kode_barang);
       if(kodeBarangExist.length === 0){
-        errors.push({ field: 'kode_barang', message: 'Kode barang tidak ditemukan!' });
+        errors.kode_barang='Kode barang tidak ditemukan!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
       const barang = await Barang.delete(kode_barang);
@@ -139,6 +148,18 @@ const barangController = {
       res.status(500).json({ session: "failed", message: "Terjadi kesalahan pada server.", error });
     }
   },
+
+  paginate: async(req, res) => {
+    try{
+      const {page, limit} = req.query;
+      const result = await Barang.paginate(page ?? 1, limit ?? 10);
+      res.status(200).json({
+        data: result
+      });
+    }catch(error){
+      res.status(500).json({session: "failed", message: "Terjadi kesalahan pada server.", error });
+    }
+  }
 };
 
 module.exports = barangController;

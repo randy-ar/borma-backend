@@ -18,9 +18,9 @@ const Barang = {
     const [result] = await db.query("INSERT INTO Barang (kode_barang, nama, harga) VALUES (?, UPPER(?), ?)", [kode_barang, nama, harga]);
     return result;
   },
-  async update(kode_barang, barang){
-    const {nama, harga} = barang;
-    const [result] = await db.query("UPDATE Barang SET nama = UPPER(?), harga = ? WHERE kode_barang = ?", [nama, harga, kode_barang]);
+  async update(param_kode_barang, barang){
+    const {nama, harga, kode_barang} = barang;
+    const [result] = await db.query("UPDATE Barang SET nama = UPPER(?), harga = ?, kode_barang = ? WHERE kode_barang = ?", [nama, harga, kode_barang, param_kode_barang]);
     return result;  
   },
   async transaksi(){
@@ -37,6 +37,29 @@ const Barang = {
   async whereIn(kode_barang){
     const [rows] = await db.query("SELECT * FROM Barang WHERE kode_barang IN (?)", [kode_barang]);
     return rows;
+  },
+
+  async random(){
+    const [rows] = await db.query("SELECT * FROM Barang ORDER BY RAND() LIMIT 1");
+    return rows;
+  },
+
+  paginate: async (page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    const [rows] = await db.query("SELECT * FROM Barang LIMIT ? OFFSET ?", [limit, offset]);
+
+    // Dapatkan total jumlah data untuk perhitungan total halaman
+    const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Barang");
+
+    return {
+      data: rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        perPage: limit
+      }
+    };
   },
 };
 

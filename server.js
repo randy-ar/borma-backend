@@ -1,14 +1,22 @@
 // server.js
 const express = require("express");
+const cors = require("cors");
 const dotenv = require("dotenv");
 const tokoRoutes = require("./routes/tokoRoutes");
 const barangRoutes = require("./routes/barangRoutes");
 const kassaRoutes = require("./routes/kassaRoutes");
 const transaksiRoutes = require("./routes/transaksiRoutes");
 
+
 dotenv.config();
 
 const app = express();
+// Middleware CORS
+app.use(cors({
+  origin: "*", // Sesuaikan dengan URL frontend Vue.js
+  credentials: true // Jika menggunakan cookies atau sesi
+}));
+
 app.use(express.json());
 
 // Routes

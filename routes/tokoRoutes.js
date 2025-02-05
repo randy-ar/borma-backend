@@ -7,6 +7,7 @@ const router = express.Router();
 router.get("/", tokoController.index);
 router.get("/show", tokoController.show);
 router.get("/first", tokoController.first);
+router.post("/update-first", tokoController.updateFirst);
 router.post("/store", tokoController.store);
 router.post("/update", tokoController.update);
 router.delete("/delete", tokoController.delete);
