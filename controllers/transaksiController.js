@@ -2,6 +2,7 @@ const Barang = require("../models/barang");
 const Kassa = require("../models/kassa");
 const Toko = require("../models/toko");
 const Transaksi = require("../models/transaksi");
+const { paginate } = require("./barangController");
 
 const transaksiController = {
   index: async (req, res) => {
@@ -22,18 +23,38 @@ const transaksiController = {
       res.status(500).json({ session: "failed", message: "Terjadi kesalahan pada server.", error });
     }
   },
+  paginate: async(req, res) => {
+    try {
+      const {page, paginate} = req.query;
+      const transaksi = await Transaksi.paginate(page ?? 1, parseInt(paginate) ?? 5);
+      const transaksiBarang = await Promise.all(transaksi.data.map(async (row) => {
+        const barangTransaksi = await Transaksi.printBarang(row.kode_transaksi);
+        return {
+          ...row,
+          daftar_barang: barangTransaksi,
+        };
+      }));
+      res.status(200).json({
+        data: transaksiBarang,
+        pagination: transaksi.pagination
+      });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ session: "failed", message: "Terjadi kesalahan pada server.", error });
+    }
+  },
   show: async (req, res) => {
     try {
       const { kode_transaksi } = req.body;
-      const errors = [];
+      const errors = {};
       const kodeTransaksiExist = await Transaksi.find(kode_transaksi);
       if(kodeTransaksiExist.length === 0){
-        errors.push({ field: 'kode_transaksi', message: 'Kode transaksi tidak ditemukan!' });
+        errors.kode_transaksi='Kode transaksi tidak ditemukan!';
       }
       if(!kode_transaksi){
-        errors.push({ field: 'kode_transaksi', message: 'Kode transaksi harus diisi!' });
+        errors.kode_transaksi='Kode transaksi harus diisi!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
       
@@ -55,27 +76,27 @@ const transaksiController = {
   store: async (req, res) => {
     try {
       const {kode_toko, kode_kassa, kode_barang, bayar } = req.body;
-      const errors = [];
+      const errors = {};
       if(kode_toko){
         const kodeTokoExist = await Toko.find(kode_toko);
         if (kodeTokoExist.length === 0) {
-          errors.push({ field: 'kode_toko', message: 'Kode toko tidak ditemukan!' });
+          errors.kode_toko='Kode toko tidak ditemukan!';
         }
       }
       if(!kode_kassa){
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa harus diisi!' });
+        errors.kode_kassa='Kode kassa harus diisi!';
       }
       const kodeKassaExist = await Kassa.find(kode_kassa);
       if (kodeKassaExist.length === 0) {
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa tidak ditemukan!' });
+        errors.kode_kassa='Kode kassa tidak ditemukan!';
       }
-      if(!kode_barang){
-        errors.push({ field: 'kode_barang', message: 'Kode barang harus diisi!' });
+      if(!kode_barang || kode_barang.length === 0){
+        errors.kode_barang='Kode barang harus diisi!';
       }
       if(!bayar || bayar <= 0){
-        errors.push({ field: 'bayar', message: 'Jumlah pembayaran harus diisi dan hanya angka positif!' });
+        errors.bayar='Jumlah pembayaran harus diisi dan hanya angka positif!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
 
@@ -89,9 +110,13 @@ const transaksiController = {
         total += barang[0].harga;
         list_barang.push(barang[0]);
       });
-      let kembalian = bayar - total;
+      let kembalian = parseInt(bayar) - parseInt(total);
       let kode_transaksi = await Transaksi.generateKodeTransaksi();
       let tanggal = new Date().toISOString().substr(0, 19).replace('T', ' ');
+
+      if(kembalian < 0){
+        return res.status(400).json({ errors: { bayar: "Jumlah pembayaran tidak mencukupi!" } });
+      }
 
       if(!kode_toko){
         const toko = await Toko.first();
@@ -99,13 +124,13 @@ const transaksiController = {
       }
 
       const transaksi = await Transaksi.create({
-        kode_transaksi,
+        kode_transaksi: kode_transaksi,
         kode_toko: kode_toko ?? kode_toko_first,
-        kode_kassa,
-        total,
-        bayar,
-        kembalian,
-        tanggal,
+        kode_kassa: kode_kassa,
+        total: total,
+        bayar: bayar,
+        kembalian: kembalian,
+        tanggal: tanggal,
       });
       const attachBarang = await Transaksi.attachBarang(kode_transaksi, list_barang);
 
@@ -131,29 +156,37 @@ const transaksiController = {
   update: async (req, res) => {
     try {
       const {kode_transaksi, kode_toko, kode_kassa, kode_barang, bayar } = req.body;
-      const errors = [];
+      const errors = {};
       if(kode_toko){
         const kodeTokoExist = await Toko.find(kode_toko);
         if (kodeTokoExist.length === 0) {
-          errors.push({ field: 'kode_toko', message: 'Kode toko tidak ditemukan!' });
+          errors.kode_toko='Kode toko tidak ditemukan!';
         }
       }
       if(!kode_kassa){
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa harus diisi!' });
+        errors.kode_kassa='Kode kassa harus diisi!';
       }
       const kodeKassaExist = await Kassa.find(kode_kassa);
       if (kodeKassaExist.length === 0) {
-        errors.push({ field: 'kode_kassa', message: 'Kode kassa tidak ditemukan!' });
+        errors.kode_kassa='Kode kassa tidak ditemukan!';
       }
       if(!kode_barang){
-        errors.push({ field: 'kode_barang', message: 'Kode barang harus diisi!' });
+        errors.kode_barang='Kode barang harus diisi!';
       }
       if(!bayar || bayar <= 0){
-        errors.push({ field: 'bayar', message: 'Jumlah pembayaran harus diisi dan hanya angka positif!' });
+        errors.bayar='Jumlah pembayaran harus diisi dan hanya angka positif!';
       }
-      if (errors.length > 0) {
+      if(!kode_transaksi){
+        errors.kode_transaksi='Kode barang harus diisi!';
+      }
+      const kodeTransaksiExist = await Transaksi.find(kode_transaksi);
+      if (kodeTransaksiExist.length === 0) {
+        errors.kode_transaksi='Kode transaksi tidak ditemukan!';
+      }
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
+
       let total = 0;
       let kode_toko_first = null;
       let list_barang = [];
@@ -164,8 +197,12 @@ const transaksiController = {
         total += barang[0].harga;
         list_barang.push(barang[0]);
       });
-      let kembalian = bayar - total;
+      let kembalian = parseInt(bayar) - parseInt(total);
       let tanggal = new Date().toISOString().substr(0, 19).replace('T', ' ');
+
+      if(kembalian < 0){
+        return res.status(400).json({ errors: { bayar: "Jumlah pembayaran tidak mencukupi!" } });
+      }
 
       if(!kode_toko){
         const toko = await Toko.first();
@@ -176,11 +213,11 @@ const transaksiController = {
         kode_transaksi,
         {
           kode_toko: kode_toko ?? kode_toko_first,
-          kode_kassa,
-          total,
-          bayar,
-          kembalian,
-          tanggal,
+          kode_kassa: kode_kassa,
+          total: total,
+          bayar: bayar,
+          kembalian: kembalian,
+          tanggal: tanggal,
         }
       );
 
@@ -213,12 +250,12 @@ const transaksiController = {
       const errors = [];
       const kodeTransaksiExist = await Transaksi.find(kode_transaksi);
       if (kodeTransaksiExist.length === 0) {
-        errors.push({ field: 'kode_transaksi', message: 'Kode transaksi tidak ditemukan!' });
+        errors.kode_transaksi='Kode transaksi tidak ditemukan!';
       }
       if(!kode_transaksi){
-        errors.push({ field: 'kode_transaksi', message: 'Kode transaksi harus diisi!' });
+        errors.kode_transaksi='Kode transaksi harus diisi!';
       }
-      if (errors.length > 0) {
+      if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
       }
       const result = await Transaksi.delete(kode_transaksi);

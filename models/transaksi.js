@@ -53,8 +53,10 @@ const Transaksi = {
       SELECT 
         Barang.kode_barang, 
         Barang.nama,
+        FORMAT(Barang.harga, 0, 'de_DE') AS harga_formatted,
         Barang.harga,
         COUNT(BarangTransaksi.kode_barang) AS jumlah_barang,
+        FORMAT(SUM(Barang.harga), 0, 'de_DE') AS subtotal_formatted,
         CAST(SUM(Barang.harga) AS UNSIGNED) AS subtotal
       FROM Barang
       INNER JOIN BarangTransaksi ON BarangTransaksi.kode_barang = Barang.kode_barang
@@ -83,7 +85,25 @@ const Transaksi = {
     const kodeTransaksi = `hadi.C1/${kode}.No/${day}.${month}.${year} ${hour}:${minute}:${second}`;
 
     return kodeTransaksi;
-  }
+  },
+
+  paginate: async (page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+    const [rows] = await db.query("SELECT * FROM Transaksi INNER JOIN Kassa ON Transaksi.kode_kassa = Kassa.kode_kassa INNER JOIN Toko ON Transaksi.kode_toko = Toko.kode_toko ORDER BY Transaksi.tanggal DESC LIMIT ? OFFSET ?", [limit, offset]);
+
+    // Dapatkan total jumlah data untuk perhitungan total halaman
+    const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Transaksi");
+
+    return {
+      data: rows,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+        perPage: limit
+      }
+    };
+  },
 }
 
 module.exports = Transaksi;
