@@ -11,13 +11,13 @@ const Kassa = {
     return rows;
   },
   create: async (kassa) => {
-    const {kode_kassa, nama} = kassa;
-    const [result] = await db.query("INSERT INTO Kassa (kode_kassa, nama) VALUES (?, UPPER(?))", [kode_kassa, nama]);
+    const {kode_kassa, nama_kassa} = kassa;
+    const [result] = await db.query("INSERT INTO Kassa (kode_kassa, nama_kassa) VALUES (?, UPPER(?))", [kode_kassa, nama_kassa]);
     return result;
   },
   update: async (param_kode_kassa, kassa) => {
-    const {nama,kode_kassa} = kassa;
-    const [result] = await db.query("UPDATE Kassa SET nama = UPPER(?), kode_kassa = ? WHERE kode_kassa = ?", [nama, kode_kassa, param_kode_kassa]);
+    const {nama_kassa,kode_kassa} = kassa;
+    const [result] = await db.query("UPDATE Kassa SET nama_kassa = UPPER(?), kode_kassa = ? WHERE kode_kassa = ?", [nama_kassa, kode_kassa, param_kode_kassa]);
     return result;
   },
   delete: async (kode_kassa) => {

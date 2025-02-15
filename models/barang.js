@@ -14,13 +14,13 @@ const Barang = {
     return result;
   },
   async create(barang){
-    const {kode_barang, nama, harga} = barang;
-    const [result] = await db.query("INSERT INTO Barang (kode_barang, nama, harga) VALUES (?, UPPER(?), ?)", [kode_barang, nama, harga]);
+    const {kode_barang, nama_barang, harga} = barang;
+    const [result] = await db.query("INSERT INTO Barang (kode_barang, nama_barang, harga) VALUES (?, UPPER(?), ?)", [kode_barang, nama_barang, harga]);
     return result;
   },
   async update(param_kode_barang, barang){
-    const {nama, harga, kode_barang} = barang;
-    const [result] = await db.query("UPDATE Barang SET nama = UPPER(?), harga = ?, kode_barang = ? WHERE kode_barang = ?", [nama, harga, kode_barang, param_kode_barang]);
+    const {nama_barang, harga, kode_barang} = barang;
+    const [result] = await db.query("UPDATE Barang SET nama_barang = UPPER(?), harga = ?, kode_barang = ? WHERE kode_barang = ?", [nama_barang, harga, kode_barang, param_kode_barang]);
     return result;  
   },
   async transaksi(){
@@ -44,9 +44,9 @@ const Barang = {
     return rows;
   },
 
-  paginate: async (page = 1, limit = 10) => {
+  paginate: async (page = 1, limit = 10, cari = '') => {
     const offset = (page - 1) * limit;
-    const [rows] = await db.query("SELECT * FROM Barang LIMIT ? OFFSET ?", [limit, offset]);
+    const [rows] = await db.query("SELECT * FROM Barang WHERE nama_barang LIKE ? OR kode_barang LIKE ? LIMIT ? OFFSET ?", ['%'+cari+'%', '%'+cari+'%', limit, offset]);
 
     // Dapatkan total jumlah data untuk perhitungan total halaman
     const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Barang");

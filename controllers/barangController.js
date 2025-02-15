@@ -40,7 +40,7 @@ const barangController = {
   },
   store: async (req, res) => {
     try {
-      const { kode_barang, nama, harga } = req.body;
+      const { kode_barang, nama_barang, harga } = req.body;
       const errors = {};
       
       const numericRegex = /^[0-9]+$/;
@@ -51,8 +51,8 @@ const barangController = {
       if (kodeBarangExist.length > 0) {
         errors.kode_barang='Kode barang sudah terdaftar!';
       }
-      if(!nama || nama.length > 30){
-        errors.nama='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
+      if(!nama_barang || nama_barang.length > 30){
+        errors.nama_barang='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
       }
       if(!harga || harga <= 0){
         errors.harga='Harga harus diisi dan hanya angka positif!';
@@ -62,7 +62,7 @@ const barangController = {
       }
       const barang = await Barang.create({
         kode_barang,
-        nama,
+        nama_barang,
         harga
       });
       const dataBarang = await Barang.find(kode_barang);
@@ -80,7 +80,7 @@ const barangController = {
   update: async (req, res) => {
     try {
       const { param_kode_barang } = req.params;
-      const { kode_barang, nama, harga } = req.body;
+      const { kode_barang, nama_barang, harga } = req.body;
       const errors = {};
 
       const paramKodeBarangExist = await Barang.find(param_kode_barang);
@@ -96,8 +96,8 @@ const barangController = {
       if(!kode_barang || !numericRegex.test(kode_barang) || kode_barang.length != 7) {
         errors.kode_barang='Kode barang hanya boleh berisi angka dan harus terdiri dari 7 karakter!';
       }
-      if(!nama || nama.length > 30){
-        errors.nama='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
+      if(!nama_barang || nama_barang.length > 30){
+        errors.nama_barang='Nama barang harus diisi dan tidak boleh lebih dari 30 karakter!';
       }
       if(!harga || harga <= 0){
         errors.harga='Harga harus diisi dan hanya angka positif!';
@@ -108,7 +108,7 @@ const barangController = {
 
       const barang = await Barang.update(param_kode_barang, {
         kode_barang,
-        nama,
+        nama_barang,
         harga
       });
       const dataBarang = await Barang.find(kode_barang);
@@ -151,8 +151,8 @@ const barangController = {
 
   paginate: async(req, res) => {
     try{
-      const {page, limit} = req.query;
-      const result = await Barang.paginate(page ?? 1, limit ?? 10);
+      const {page, limit, cari} = req.query;
+      const result = await Barang.paginate(page ?? 1, limit ?? 10, cari);
       res.status(200).json({
         data: result
       });

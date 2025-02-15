@@ -2,6 +2,7 @@ const Barang = require("../models/barang");
 const Kassa = require("../models/kassa");
 const Toko = require("../models/toko");
 const Transaksi = require("../models/transaksi");
+const { search } = require("../routes/transaksiRoutes");
 const { paginate } = require("./barangController");
 
 const transaksiController = {
@@ -25,8 +26,9 @@ const transaksiController = {
   },
   paginate: async(req, res) => {
     try {
-      const {page, paginate} = req.query;
-      const transaksi = await Transaksi.paginate(page ?? 1, parseInt(paginate) ?? 5);
+      const {page, paginate, kode_transaksi} = req.query;
+      const decodedKodeTransaksi = kode_transaksi ? decodeURIComponent(kode_transaksi) : '';
+      const transaksi = await Transaksi.paginate(page ?? 1, parseInt(paginate) ?? 5, decodedKodeTransaksi ?? '');
       const transaksiBarang = await Promise.all(transaksi.data.map(async (row) => {
         const barangTransaksi = await Transaksi.printBarang(row.kode_transaksi);
         return {
@@ -36,7 +38,9 @@ const transaksiController = {
       }));
       res.status(200).json({
         data: transaksiBarang,
-        pagination: transaksi.pagination
+        pagination: transaksi.pagination,
+        search: decodedKodeTransaksi,
+        kode_transaksi: decodedKodeTransaksi
       });
     } catch (error) {
       console.error(error);
@@ -279,6 +283,7 @@ const transaksiController = {
   },
   generateDummy: async (req, res) => {
     let insertedData = [];
+    const JUMLAH_TRANSAKSI = 365 * 40;
     const toko = await Toko.first();
     const kode_toko = toko[0].kode_toko;
 
@@ -290,19 +295,22 @@ const transaksiController = {
       return new Date(pastDate.getTime() + Math.random() * (now.getTime() - pastDate.getTime()));
     }
 
-    for(let index_transaksi = 0; index_transaksi < 200; index_transaksi++) {
+    for(let index_transaksi = 0; index_transaksi < JUMLAH_TRANSAKSI; index_transaksi++) {
       const kassa = await Kassa.random();
       const kode_kassa = kassa[0].kode_kassa;
-      let jumlah_barang = Math.floor(Math.random() * 50);
+      let jumlah_barang = Math.ceil(Math.random() * 10);
+      if(jumlah_barang === 0) {
+        jumlah_barang = 1;
+      }
       let bayar = 0;
       let total = 0;
       let kembalian = 0;
-      let tanggal = getRandomDate(90);
+      let tanggal = getRandomDate(365);
       let tanggal_formated = tanggal.toISOString().substr(0, 19).replace('T', ' ');
       let kode_transaksi = await Transaksi.generateKodeTransaksi(tanggal);
       let list_barang = [];
 
-      for(let i = 0; i < jumlah_barang; i++) {
+      for(let i = 1; i <= jumlah_barang; i++) {
         const barang = await Barang.random();
         total += barang[0].harga;
         list_barang.push(barang[0]);
@@ -324,17 +332,17 @@ const transaksiController = {
       const attach_barang = await Transaksi.attachBarang(kode_transaksi, list_barang);
 
       if(transaksi.affectedRows > 0) {
-        insertedData.push({
-          kode_transaksi: kode_transaksi,
-          kode_toko: kode_toko,
-          kode_kassa: kode_kassa,
-          total: bayar,
-          bayar: bayar,
-          kembalian: 0,
-          tanggal: tanggal,
-          attach_barang: attach_barang,
-          jumlah_barang: jumlah_barang
-        });
+        // insertedData.push({
+        //   kode_transaksi: kode_transaksi,
+        //   kode_toko: kode_toko,
+        //   kode_kassa: kode_kassa,
+        //   total: bayar,
+        //   bayar: bayar,
+        //   kembalian: 0,
+        //   tanggal: tanggal,
+        //   attach_barang: attach_barang,
+        //   jumlah_barang: jumlah_barang
+        // });
       }
     }
 

@@ -7,7 +7,14 @@ const Transaksi = {
     return rows;
   },
   find: async (kode_transaksi) => {
-    const [rows] = await db.query("SELECT * FROM Transaksi WHERE kode_transaksi = ?", [kode_transaksi]);
+    const [rows] = await db.query(`
+      SELECT 
+        *
+      FROM Transaksi
+      INNER JOIN Kassa ON Transaksi.kode_kassa = Kassa.kode_kassa
+      INNER JOIN Toko ON Transaksi.kode_toko = Toko.kode_toko
+      WHERE Transaksi.kode_transaksi = ?
+    `, [kode_transaksi]);
     return rows;
   },  
   create: async (transaksi) => {
@@ -52,7 +59,7 @@ const Transaksi = {
     const [rows] = await db.query(`
       SELECT 
         Barang.kode_barang, 
-        Barang.nama,
+        Barang.nama_barang,
         FORMAT(Barang.harga, 0, 'de_DE') AS harga_formatted,
         Barang.harga,
         COUNT(BarangTransaksi.kode_barang) AS jumlah_barang,
@@ -87,9 +94,9 @@ const Transaksi = {
     return kodeTransaksi;
   },
 
-  paginate: async (page = 1, limit = 10) => {
+  paginate: async (page = 1, limit = 10, kode_transaksi = '') => {
     const offset = (page - 1) * limit;
-    const [rows] = await db.query("SELECT * FROM Transaksi INNER JOIN Kassa ON Transaksi.kode_kassa = Kassa.kode_kassa INNER JOIN Toko ON Transaksi.kode_toko = Toko.kode_toko ORDER BY Transaksi.tanggal DESC LIMIT ? OFFSET ?", [limit, offset]);
+    const [rows] = await db.query("SELECT * FROM Transaksi INNER JOIN Kassa ON Transaksi.kode_kassa = Kassa.kode_kassa INNER JOIN Toko ON Transaksi.kode_toko = Toko.kode_toko WHERE Transaksi.kode_transaksi LIKE ? ORDER BY Transaksi.tanggal DESC LIMIT ? OFFSET ?", ['%'+kode_transaksi+'%', limit, offset]);
 
     // Dapatkan total jumlah data untuk perhitungan total halaman
     const [[{ total }]] = await db.query("SELECT COUNT(*) as total FROM Transaksi");

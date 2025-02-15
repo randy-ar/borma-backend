@@ -26,7 +26,7 @@ const kassaController = {
   },
   store: async (req, res) => {
     try {
-      const {kode_kassa, nama} = req.body;
+      const {kode_kassa, nama_kassa} = req.body;
 
       const errors = {};
       const alphanumericRegex = /^[a-zA-Z0-9]+$/;
@@ -37,8 +37,8 @@ const kassaController = {
       if (existingKassa.length > 0) {
         errors.kode_kassa = 'Kode kassa sudah terdaftar!';
       }
-      if(!nama || nama.length > 10){
-        errors.nama='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
+      if(!nama_kassa || nama_kassa.length > 10){
+        errors.nama_kassa='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
       }
       if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
@@ -46,7 +46,7 @@ const kassaController = {
 
       const result = await Kassa.create({
         kode_kassa,
-        nama
+        nama_kassa
       });
 
       const dataKassa = await Kassa.find(kode_kassa);
@@ -64,15 +64,15 @@ const kassaController = {
   update: async (req, res) => {
     try{
       const { param_kode_kassa } = req.params;
-      const { nama, kode_kassa } = req.body;
+      const { nama_kassa, kode_kassa } = req.body;
 
       const errors = {};
       const existingKassa = await Kassa.find(param_kode_kassa);
       if (existingKassa.length === 0) {
         errors.kode_kassa='Kode kassa tidak ditemukan!';
       }
-      if(!nama || nama.length > 10){
-        errors.nama='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
+      if(!nama_kassa || nama_kassa.length > 10){
+        errors.nama_kassa='Nama kassa harus diisi dan tidak boleh lebih dari 10 karakter!';
       }
       if (errors && Object.keys(errors).length > 0) {
         return res.status(400).json({ errors });
@@ -80,7 +80,7 @@ const kassaController = {
 
       const result = await Kassa.update(param_kode_kassa, {
         kode_kassa,
-        nama
+        nama_kassa
       });
 
       const dataKassa = await Kassa.find(kode_kassa);

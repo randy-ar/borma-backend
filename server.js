@@ -6,7 +6,7 @@ const tokoRoutes = require("./routes/tokoRoutes");
 const barangRoutes = require("./routes/barangRoutes");
 const kassaRoutes = require("./routes/kassaRoutes");
 const transaksiRoutes = require("./routes/transaksiRoutes");
-
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 dotenv.config();
 
@@ -24,6 +24,7 @@ app.use("/api/toko", tokoRoutes);
 app.use("/api/barang", barangRoutes);
 app.use("/api/kassa", kassaRoutes);
 app.use("/api/transaksi", transaksiRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Error handling
 app.use((req, res) => {
